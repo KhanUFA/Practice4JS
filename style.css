@@ -1,0 +1,12 @@
+nav {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	background-color: bisque;
+	padding-bottom: 10px;
+}
+
+input {
+	margin: 10px;
+}
