@@ -4,9 +4,21 @@ nav {
 	top: 0px;
 	width: 100%;
 	background-color: bisque;
-	padding-bottom: 10px;
+	box-shadow: 5px 2px 25px rgba(128, 128, 128, 0.664);
 }
 
 input {
 	margin: 10px;
+}
+
+#panelLeftTable {
+	margin-top: 55px;
+}
+
+td,
+th {
+	border: 1px solid #333;
+	padding: 4px;
+	margin: 0px;
+	border-collapse: collapse;
 }
