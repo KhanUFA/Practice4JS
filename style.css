@@ -11,14 +11,40 @@ input {
 	margin: 10px;
 }
 
-#panelLeftTable {
-	margin-top: 55px;
+table {
+	border-collapse: collapse;
+}
+/* границы ячеек первого ряда таблицы */
+th {
+	border: 1px solid grey;
+	padding: 5px;
+}
+/* границы ячеек тела таблицы */
+td {
+	border: 1px solid grey;
 }
 
-td,
-th {
-	border: 1px solid #333;
-	padding: 4px;
-	margin: 0px;
-	border-collapse: collapse;
+tr:nth-child(2n) {
+	background-color: rgb(235, 186, 126);
+}
+
+tr:hover td {
+	background-color: rgb(212, 255, 110) !important;
+	cursor: grab;
+	transition: 0.3s;
+}
+
+#panelLeftTable {
+	width: 50%;
+	margin-right: 10px;
+}
+
+#panelRightTable {
+	width: 50%;
+}
+
+#flexBox {
+	display: flex;
+	flex-wrap: nowrap;
+	margin-top: 55px;
 }

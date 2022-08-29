@@ -19,29 +19,30 @@ async function load(name) {
 }
 
 function getPlaceLvl(code2, code3, code4) {
-	let lvl = 0;
-	if (code4 !== 0) {
-		return 0;
-	} else if (code3 !== 0) {
+	if (code4 !== "000") {
+		return 3; //? Населённый пункт
+	} else if (code3 !== "000") {
+		return 2; //? Район
+	} else if (code2 !== "000") {
 		return 1;
-	} else if (code2 !== 0) {
-		return 2;
+	} else {
+		return 0;
 	}
 }
 
-//*Example line of string: "01";"512";"000";"101";"8";"2";"с Залесово";;;"493";"3";12.08.2021;01.01.2022
+//*Example line of txt: "01";"512";"000";"101";"8";"2";"с Залесово";;;"493";"3";12.08.2021;01.01.2022
 function buildArrayOfPlacesByReg(placesText) {
 	const regEx = /(\d+)";"(\d+)";"(\d+)";"(\d+)".+?;"([А-Яа-я].*?)";/g;
 
 	let placeSplited = regEx.exec(placesText);
 	do {
-		const code2 = Number(placeSplited[2]);
-		const code3 = Number(placeSplited[3]);
-		const code4 = Number(placeSplited[4]);
+		const code2 = placeSplited[2];
+		const code3 = placeSplited[3];
+		const code4 = placeSplited[4];
 		const lvl = getPlaceLvl(code2, code3, code4);
 		placesDB.push({
 			lvl: lvl,
-			code1: Number(placeSplited[1]),
+			code1: placeSplited[1],
 			code2: code2,
 			code3: code3,
 			code4: code4,
@@ -60,13 +61,13 @@ function buildArrayOfPlacesBySplit(placesText) {
 			.slice(1, iterator.lastIndexOf(";;;"))
 			.split(/";"/);
 
-		const code2 = Number(placeSplited[2]);
-		const code3 = Number(placeSplited[3]);
-		const code4 = Number(placeSplited[4]);
+		const code2 = placeSplited[2];
+		const code3 = placeSplited[3];
+		const code4 = placeSplited[4];
 		const lvl = getPlaceLvl(code2, code3, code4);
 		placesDB.push({
 			lvl: lvl,
-			code1: Number(placeSplited[0]),
+			code1: placeSplited[0],
 			code2: code2,
 			code3: code3,
 			code4: code4,
@@ -76,11 +77,54 @@ function buildArrayOfPlacesBySplit(placesText) {
 	console.log("placesDB length:" + placesDB.length);
 }
 
+function createRow(place, table) {
+	const row = document.createElement("tr");
+	row.setAttribute("level", place.lvl);
+	let cell = document.createElement("td");
+
+	cell.innerText = place.code1;
+	row.appendChild(cell);
+
+	cell = document.createElement("td");
+	cell.innerText = place.code2;
+	row.appendChild(cell);
+
+	cell = document.createElement("td");
+	cell.innerText = place.code3;
+	row.appendChild(cell);
+
+	cell = document.createElement("td");
+	cell.innerText = place.code4;
+	row.appendChild(cell);
+
+	cell = document.createElement("td");
+	cell.innerText = place.name;
+	row.appendChild(cell);
+
+	table.appendChild(row);
+}
+
+function fillTable(table) {
+	for (const place of placesDB) {
+		createRow(place, table);
+	}
+}
+
 window.onload = async () => {
 	const nameFile = "/small.csv";
+	const table = document.getElementById("leftTable");
 	placesTextResponce = await load(nameFile);
 
 	let timeBegin = Date.now();
 	buildArrayOfPlacesByReg(placesTextResponce);
-	console.log(Date.now() - timeBegin);
+	console.log("Время выполнения: " + (Date.now() - timeBegin));
+
+	fillTable(table);
+};
+
+document.getElementsByTagName("select").onclick = function (event) {
+	const option = event.option.value;
+	if (option === "RegEx") {
+		alert("re");
+	}
 };

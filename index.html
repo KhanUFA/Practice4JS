@@ -13,14 +13,27 @@
 			<input type="text" placeholder="Регион" />
 			<input type="text" placeholder="Район" />
 			<input type="text" placeholder="Населённый пункт" />
-			<select name="option" id="splitSelector">
+			<select name="option">
 				<option selected value="RegEx">RegEx</option>
 				<option value="Split">Split</option>
 			</select>
 		</nav>
-		<div id="panelLeftTable">
-			<table>
-				<thead>
+		<div id="flexBox">
+			<div id="panelLeftTable">
+				<table id="leftTable">
+					<thead>
+						<tr>
+							<th>Код 1</th>
+							<th>Код 2</th>
+							<th>Код 3</th>
+							<th>Код 4</th>
+							<th>Название</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div id="panelRightTable">
+				<table id="rightTable">
 					<tr>
 						<th>Код 1</th>
 						<th>Код 2</th>
@@ -28,10 +41,8 @@
 						<th>Код 4</th>
 						<th>Название</th>
 					</tr>
-				</thead>
-				<tr></tr>
-			</table>
+				</table>
+			</div>
 		</div>
-		<div id="panelRightTable"></div>
 	</body>
 </html>
