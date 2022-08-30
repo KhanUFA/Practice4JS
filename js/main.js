@@ -136,11 +136,32 @@ window.onload = async () => {
 				buildArrayOfPlacesBySplit(placesTextResponce);
 			}
 			console.log("Время выполнения: " + (Date.now() - timeBegin));
-			console.log("Select Option:" + option);
+			console.log("Select option:" + option);
 			fillTable(table);
 		});
 
-	document
-		.getElementsByTagName(input)[0]
-		.addEventListener("input", (event) => {});
+	//TODO: Сделать два массива с Регионами и Районами/Округами.
+	//TODO: Выбранный Регион сделть глобальным
+	function searchRegion(event) {
+		const inspectRegion = this.value;
+
+		if (inspectRegion.length < 3) return;
+
+		const arrayOfRegionAndAreas = placesDB.filter(
+			(value) => value.level === 0 && value.level === 1
+		);
+		let tempRegion;
+		for (const i = 0; i < arrayOfRegionAndAreas.length; i++) {
+			if (arrayOfRegionAndAreas[i].code1 !== tempRegion.code1) {
+				tempRegion = row;
+			}
+
+			if (!arrayOfRegionAndAreas[i].name.include(inspectRegion)) {
+				arrayOfRegionAndAreas.splice(i, 1);
+			}
+		}
+	}
+
+	const inputsOnNav = document.getElementsByTagName("input");
+	inputsOnNav[0].addEventListener("input", searchRegion);
 };
