@@ -25,7 +25,7 @@ td {
 }
 
 tr:nth-child(2n) {
-	background-color: rgb(235, 186, 126);
+	background-color: rgba(253, 109, 152, 0.349);
 }
 
 tr:hover td {
