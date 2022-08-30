@@ -30,7 +30,7 @@ tr:nth-child(2n) {
 
 tr:hover td {
 	background-color: rgb(212, 255, 110) !important;
-	cursor: grab;
+	cursor: pointer;
 	transition: 0.3s;
 }
 

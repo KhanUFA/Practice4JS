@@ -1,7 +1,6 @@
 "use strict";
 
 let placesDB = [];
-let placesTextResponce;
 async function load(name) {
 	try {
 		const responce = await fetch(name, {
@@ -10,7 +9,7 @@ async function load(name) {
 			},
 		});
 
-		return await responce.text();
+		return responce.text();
 	} catch (err) {
 		alert("Failed to open file!");
 		console.log(err);
@@ -22,11 +21,11 @@ function getPlaceLvl(code2, code3, code4) {
 	if (code4 !== "000") {
 		return 3; //? Населённый пункт
 	} else if (code3 !== "000") {
-		return 2; //? Район
+		return 2; //? Сельсовет
 	} else if (code2 !== "000") {
-		return 1;
+		return 1; //? Район(Округ)
 	} else {
-		return 0;
+		return 0; //? Регион
 	}
 }
 
@@ -58,12 +57,12 @@ function buildArrayOfPlacesBySplit(placesText) {
 
 	for (const iterator of placesArray) {
 		const placeSplited = iterator
-			.slice(1, iterator.lastIndexOf(";;;"))
+			.slice(1, iterator.lastIndexOf('";;;'))
 			.split(/";"/);
 
-		const code2 = placeSplited[2];
-		const code3 = placeSplited[3];
-		const code4 = placeSplited[4];
+		const code2 = placeSplited[1];
+		const code3 = placeSplited[2];
+		const code4 = placeSplited[3];
 		const lvl = getPlaceLvl(code2, code3, code4);
 		placesDB.push({
 			lvl: lvl,
@@ -106,25 +105,42 @@ function createRow(place, table) {
 
 function fillTable(table) {
 	for (const place of placesDB) {
+		if (place.code4 !== "000") continue;
 		createRow(place, table);
 	}
 }
 
 window.onload = async () => {
 	const nameFile = "/small.csv";
-	const table = document.getElementById("leftTable");
-	placesTextResponce = await load(nameFile);
+	let table = document.getElementById("leftTable");
+	const templateTable = table.cloneNode(true);
 
-	let timeBegin = Date.now();
+	const placesTextResponce = await load(nameFile);
+
 	buildArrayOfPlacesByReg(placesTextResponce);
-	console.log("Время выполнения: " + (Date.now() - timeBegin));
 
 	fillTable(table);
-};
 
-document.getElementsByTagName("select").onclick = function (event) {
-	const option = event.option.value;
-	if (option === "RegEx") {
-		alert("re");
-	}
+	document
+		.getElementById("selectSeporator")
+		.addEventListener("change", (event) => {
+			const option = event.target.value;
+			placesDB = [];
+			table.replaceWith(templateTable);
+			table = document.getElementById("leftTable");
+
+			let timeBegin = Date.now();
+			if (option === "RegEx") {
+				buildArrayOfPlacesByReg(placesTextResponce);
+			} else {
+				buildArrayOfPlacesBySplit(placesTextResponce);
+			}
+			console.log("Время выполнения: " + (Date.now() - timeBegin));
+			console.log("Select Option:" + option);
+			fillTable(table);
+		});
+
+	document
+		.getElementsByTagName(input)[0]
+		.addEventListener("input", (event) => {});
 };
