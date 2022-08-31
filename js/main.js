@@ -1,6 +1,7 @@
 "use strict";
 
 let placesDB = [];
+let countryDB = [];
 async function load(name) {
 	try {
 		const responce = await fetch(name, {
@@ -39,14 +40,20 @@ function buildArrayOfPlacesByReg(placesText) {
 		const code3 = placeSplited[3];
 		const code4 = placeSplited[4];
 		const lvl = getPlaceLvl(code2, code3, code4);
-		placesDB.push({
+		const place = {
 			lvl: lvl,
 			code1: placeSplited[1],
 			code2: code2,
 			code3: code3,
 			code4: code4,
 			name: placeSplited[5],
-		});
+		};
+		placesDB.push(place);
+
+		if (lvl === 3) {
+			countryDB.push(place);
+		}
+
 		placeSplited = regEx.exec(placeSplited.input);
 	} while (placeSplited !== null);
 	console.log("placesDB length:" + placesDB.length);
@@ -64,14 +71,19 @@ function buildArrayOfPlacesBySplit(placesText) {
 		const code3 = placeSplited[2];
 		const code4 = placeSplited[3];
 		const lvl = getPlaceLvl(code2, code3, code4);
-		placesDB.push({
+		const place = {
 			lvl: lvl,
-			code1: placeSplited[0],
+			code1: placeSplited[1],
 			code2: code2,
 			code3: code3,
 			code4: code4,
-			name: placeSplited[6],
-		});
+			name: placeSplited[5],
+		};
+		placesDB.push(place);
+
+		if (lvl === 3) {
+			countryDB.push(place);
+		}
 	}
 	console.log("placesDB length:" + placesDB.length);
 }
@@ -103,65 +115,104 @@ function createRow(place, table) {
 	table.appendChild(row);
 }
 
-function fillTable(table) {
-	for (const place of placesDB) {
-		if (place.code4 !== "000") continue;
-		createRow(place, table);
-	}
-}
-
 window.onload = async () => {
-	const nameFile = "/small.csv";
-	let table = document.getElementById("leftTable");
-	const templateTable = table.cloneNode(true);
+	const nameFile = "/oktmo.csv";
+	let leftTable = document.getElementById("leftTable");
+
+	const templateTable = document.querySelector("#rightTable").cloneNode(true);
+	templateTable.id = "";
+
+	console.log(templateTable);
 
 	const placesTextResponce = await load(nameFile);
 
 	buildArrayOfPlacesByReg(placesTextResponce);
 
-	fillTable(table);
+	const arrayOfRegionAndDistricts = placesDB.filter(
+		(value) => value.lvl === 0 || value.lvl === 1
+	);
+	fillTable(leftTable, arrayOfRegionAndDistricts);
+
+	function fillTable(table, array) {
+		const newTable = templateTable.cloneNode(true);
+		newTable.id = table.id;
+		table.replaceWith(newTable);
+
+		for (const place of array) {
+			createRow(place, newTable);
+		}
+	}
+
+	function searchRegion(event) {
+		let table = document.getElementById("leftTable");
+		const inspectedName = this.value.toUpperCase();
+		if (inspectedName.length < 3) {
+			const lengthTable =
+				document.querySelectorAll("#leftTable > tr").length;
+			console.log("Length table: ", lengthTable);
+
+			if (lengthTable < arrayOfRegionAndDistricts.length) {
+				fillTable(table, arrayOfRegionAndDistricts);
+			}
+			return;
+		}
+
+		const findedPlace = arrayOfRegionAndDistricts.filter((value) =>
+			value.name.toUpperCase().includes(inspectedName)
+		);
+		// debugger;
+
+		if (findedPlace) {
+			let responceArray = [];
+			let region;
+			for (const place of findedPlace) {
+				if (place.lvl !== 0) {
+					region = arrayOfRegionAndDistricts.find(
+						(value) =>
+							value.lvl === 0 && value.code1 === place.code1
+					);
+					responceArray.push(region);
+					responceArray.push(place);
+				} else {
+					responceArray.push(place);
+				}
+			}
+			const uniqueArray = [...new Set(responceArray)];
+			fillTable(table, uniqueArray);
+		} else {
+			fillTable(table, []);
+		}
+	}
+
+	function searchCountry(event) {
+		const inspectedName = this.value;
+		let rightTable = document.getElementById("rightTable");
+
+		if (inspectedName.length < 2) {
+		}
+	}
 
 	document
 		.getElementById("selectSeporator")
 		.addEventListener("change", (event) => {
 			const option = event.target.value;
 			placesDB = [];
-			table.replaceWith(templateTable);
-			table = document.getElementById("leftTable");
 
 			let timeBegin = Date.now();
+
 			if (option === "RegEx") {
 				buildArrayOfPlacesByReg(placesTextResponce);
 			} else {
 				buildArrayOfPlacesBySplit(placesTextResponce);
 			}
+
 			console.log("Время выполнения: " + (Date.now() - timeBegin));
 			console.log("Select option:" + option);
-			fillTable(table);
+
+			fillTable(leftTable, arrayOfRegionAndDistricts);
 		});
-
-	//TODO: Сделать два массива с Регионами и Районами/Округами.
-	//TODO: Выбранный Регион сделть глобальным
-	function searchRegion(event) {
-		const inspectRegion = this.value;
-
-		if (inspectRegion.length < 3) return;
-
-		const arrayOfRegionAndAreas = placesDB.filter(
-			(value) => value.level === 0 && value.level === 1
-		);
-		let tempRegion;
-		for (const i = 0; i < arrayOfRegionAndAreas.length; i++) {
-			if (arrayOfRegionAndAreas[i].code1 !== tempRegion.code1) {
-				tempRegion = row;
-			}
-
-			if (!arrayOfRegionAndAreas[i].name.include(inspectRegion)) {
-				arrayOfRegionAndAreas.splice(i, 1);
-			}
-		}
-	}
 
 	const inputsOnNav = document.getElementsByTagName("input");
 	inputsOnNav[0].addEventListener("input", searchRegion);
+	inputsOnNav[1].addEventListener("input", searchCountry);
 };
