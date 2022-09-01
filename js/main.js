@@ -1,5 +1,6 @@
-"use strict";
+import { binarySearch } from "./binarySearch.js";
 
+("use strict");
 let placesDB = [];
 let countryDB = [];
 let arrayOfRegionAndDistricts = [];
@@ -33,7 +34,8 @@ function getPlaceLvl(code2, code3, code4) {
 
 //*Example line of txt: "01";"512";"000";"101";"8";"2";"с Залесово";;;"493";"3";12.08.2021;01.01.2022
 function buildArrayOfPlacesByReg(placesText) {
-	const regEx = /(\d+)";"(\d+)";"(\d+)";"(\d+)".+?;"([А-Яа-я].*?)";/g;
+	const regEx =
+		/(\d+)";"(\d+)";"(\d+)";"(\d+)".+?;"([а-я]*)\s?([А-Яа-я].*?)";/g;
 
 	let placeSplited = regEx.exec(placesText);
 	do {
@@ -47,7 +49,8 @@ function buildArrayOfPlacesByReg(placesText) {
 			code2: code2,
 			code3: code3,
 			code4: code4,
-			name: placeSplited[5],
+			name: placeSplited[6],
+			type: placeSplited[5],
 		};
 		placesDB.push(place);
 
@@ -56,6 +59,7 @@ function buildArrayOfPlacesByReg(placesText) {
 		}
 
 		if (lvl === 0 || lvl === 1) {
+			place.name = place.name.replaceAll(/"/g, "");
 			arrayOfRegionAndDistricts.push(place);
 		}
 
@@ -91,6 +95,7 @@ function buildArrayOfPlacesBySplit(placesText) {
 		}
 
 		if (lvl === 0 || lvl === 1) {
+			place.name = place.name.replaceAll(/"/g, "");
 			arrayOfRegionAndDistricts.push(place);
 		}
 	}
@@ -130,7 +135,12 @@ window.onload = async () => {
 	const templateTable = document.querySelector("#rightTable").cloneNode(true);
 	templateTable.id = "";
 
-	countryDB.sort((a, b) => {});
+	countryDB.sort((a, b) => {
+		const aName = a.name.toUpperCase();
+		const bName = b.name.toUpperCase();
+
+		return aName.localeCompare(bName);
+	});
 
 	const placesTextResponce = await load(nameFile);
 	buildArrayOfPlacesByReg(placesTextResponce);
@@ -169,7 +179,7 @@ window.onload = async () => {
 		);
 		// debugger;
 
-		if (findedPlace) {
+		if (findedPlace.length !== 0) {
 			let responceArray = [];
 			let region;
 			for (const place of findedPlace) {
@@ -191,11 +201,25 @@ window.onload = async () => {
 		}
 	}
 
-	function searchCountry(event) {
+	async function searchCountry(event) {
 		const inspectedName = this.value;
 		let rightTable = document.getElementById("rightTable");
 
 		if (inspectedName.length > 2) {
+			let responce = [];
+			let cloneCountry = [...countryDB];
+			console.log(cloneCountry);
+
+			let positoinCounrtry = binarySearch(inspectedName, cloneCountry);
+			while (positoinCounrtry !== -1 && responce.length < 20) {
+				responce.push(cloneCountry[positoinCounrtry]);
+				cloneCountry.splice(positoinCounrtry, 1);
+				positoinCounrtry = binarySearch(inspectedName, cloneCountry);
+			}
+
+			fillTable(rightTable, responce);
+		} else {
+			fillTable(rightTable, []);
 		}
 	}
 
