@@ -2,6 +2,7 @@
 
 let placesDB = [];
 let countryDB = [];
+let arrayOfRegionAndDistricts = [];
 async function load(name) {
 	try {
 		const responce = await fetch(name, {
@@ -54,6 +55,10 @@ function buildArrayOfPlacesByReg(placesText) {
 			countryDB.push(place);
 		}
 
+		if (lvl === 0 || lvl === 1) {
+			arrayOfRegionAndDistricts.push(place);
+		}
+
 		placeSplited = regEx.exec(placeSplited.input);
 	} while (placeSplited !== null);
 	console.log("placesDB length:" + placesDB.length);
@@ -83,6 +88,10 @@ function buildArrayOfPlacesBySplit(placesText) {
 
 		if (lvl === 3) {
 			countryDB.push(place);
+		}
+
+		if (lvl === 0 || lvl === 1) {
+			arrayOfRegionAndDistricts.push(place);
 		}
 	}
 	console.log("placesDB length:" + placesDB.length);
@@ -118,14 +127,12 @@ function createRow(place, table) {
 window.onload = async () => {
 	const nameFile = "/oktmo.csv";
 	let leftTable = document.getElementById("leftTable");
-
 	const templateTable = document.querySelector("#rightTable").cloneNode(true);
 	templateTable.id = "";
 
-	console.log(templateTable);
+	countryDB.sort((a, b) => {});
 
 	const placesTextResponce = await load(nameFile);
-
 	buildArrayOfPlacesByReg(placesTextResponce);
 
 	const arrayOfRegionAndDistricts = placesDB.filter(
@@ -188,9 +195,13 @@ window.onload = async () => {
 		const inspectedName = this.value;
 		let rightTable = document.getElementById("rightTable");
 
-		if (inspectedName.length < 2) {
+		if (inspectedName.length > 2) {
 		}
 	}
+
+	const inputsOnNav = document.getElementsByTagName("input");
+	inputsOnNav[0].addEventListener("input", searchRegion);
+	inputsOnNav[1].addEventListener("input", searchCountry);
 
 	document
 		.getElementById("selectSeporator")
@@ -211,8 +222,4 @@ window.onload = async () => {
 
 			fillTable(leftTable, arrayOfRegionAndDistricts);
 		});
-
-	const inputsOnNav = document.getElementsByTagName("input");
-	inputsOnNav[0].addEventListener("input", searchRegion);
-	inputsOnNav[1].addEventListener("input", searchCountry);
 };
